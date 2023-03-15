@@ -65,7 +65,6 @@ protected:
 	CMenu m_Menu;
 public:
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
-	void OnLine();
 };
 
 #ifndef _DEBUG  // draw3View.cpp 中的调试版本
