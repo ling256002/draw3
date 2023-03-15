@@ -63,6 +63,21 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	EnableDocking(CBRS_ALIGN_ANY);
 	DockControlBar(&m_wndToolBar);
 
+	//定义菜单对象
+	CMenu menu;
+	//创建菜单
+	menu.CreateMenu();
+	//创建4个子项，并添加到菜单里去
+	menu.AppendMenu(MF_STRING, ID_MSG_DRAW_LINE, _T("画线(&L)\tCtrl+L"));
+	menu.AppendMenu(MF_STRING, ID_MSG_DRAW_RECT, _T("画矩形"));
+	menu.AppendMenu(MF_STRING, ID_MSG_DRAW_ELLIPSE, _T("画椭圆"));
+	menu.AppendMenu(MF_STRING, ID_MSG_DRAW_PEN, _T("画笔"));
+
+	//得到菜单栏上的菜单
+	GetMenu()->AppendMenu(MF_POPUP, (UINT)menu.m_hMenu, _T("绘图"));
+	//分离“窗口对象”和“窗口”
+	menu.Detach();
+
 
 	return 0;
 }

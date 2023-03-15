@@ -34,6 +34,17 @@ BEGIN_MESSAGE_MAP(Cdraw3View, CView)
 	ON_UPDATE_COMMAND_UI(ID_DRAW_LINE, &Cdraw3View::OnUpdateDrawLine)
 	ON_UPDATE_COMMAND_UI(ID_DRAW_PEN, &Cdraw3View::OnUpdateDrawPen)
 	ON_UPDATE_COMMAND_UI(ID_DRAW_RECT, &Cdraw3View::OnUpdateDrawRect)
+	/*ON_COMMAND(ID_MSG_DRAW_LINE, &Cdraw3View::OnDrawLine)
+	ON_COMMAND(ID_MSG_DRAW_RECT, &Cdraw3View::OnDrawRect)
+	ON_COMMAND(ID_MSG_DRAW_ELLIPSE, &Cdraw3View::OnDrawEllipse)
+	ON_COMMAND(ID_MSG_DRAW_PEN, &Cdraw3View::OnDrawPen)
+	ON_UPDATE_COMMAND_UI(ID_MSG_DRAW_LINE, &Cdraw3View::OnUpdateDrawEllipse)
+	ON_UPDATE_COMMAND_UI(ID_MSG_DRAW_RECT, &Cdraw3View::OnUpdateDrawLine)
+	ON_UPDATE_COMMAND_UI(ID_MSG_DRAW_ELLIPSE, &Cdraw3View::OnUpdateDrawPen)
+	ON_UPDATE_COMMAND_UI(ID_MSG_DRAW_PEN, &Cdraw3View::OnUpdateDrawRect)*/
+	
+	ON_COMMAND(ID_MSG_DRAW_LINE, &Cdraw3View::OnLine)
+	
 	ON_WM_RBUTTONUP()
 END_MESSAGE_MAP()
 
@@ -247,4 +258,12 @@ void Cdraw3View::OnRButtonUp(UINT nFlags, CPoint point)
 	ClientToScreen(&point);
 	mu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTALIGN, point.x, point.y, this);
 	CView::OnRButtonUp(nFlags, point);
+}
+
+
+void Cdraw3View::OnLine()
+{
+	// TODO: 在此处添加实现代码.
+	MessageBox(_T("Draw Line"));
+	m_DrawType = DT_PEN;
 }
