@@ -9,6 +9,13 @@
 
 #include "resource.h"       // 主符号
 
+enum ID_MSG
+{
+	ID_MSG_DRAW_LINE = (WM_USER + 1),
+	ID_MSG_DRAW_RECT,
+	ID_MSG_DRAW_ELLIPSE,
+	ID_MSG_DRAW_PEN
+};
 
 // Cdraw3App:
 // 有关此类的实现，请参阅 draw3.cpp
