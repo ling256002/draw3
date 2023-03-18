@@ -16,6 +16,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include "Setup.h"
 
 
 // Cdraw3View
@@ -35,6 +36,7 @@ BEGIN_MESSAGE_MAP(Cdraw3View, CView)
 	ON_UPDATE_COMMAND_UI(ID_DRAW_PEN, &Cdraw3View::OnUpdateDrawPen)
 	ON_UPDATE_COMMAND_UI(ID_DRAW_RECT, &Cdraw3View::OnUpdateDrawRect)
 	ON_WM_RBUTTONUP()
+	ON_COMMAND(ID_FILE_SETUP, &Cdraw3View::OnFileSetup)
 END_MESSAGE_MAP()
 
 // Cdraw3View 构造/析构
@@ -47,6 +49,8 @@ Cdraw3View::Cdraw3View() noexcept
 	m_bDraw = false;
 	m_DrawType = DT_LINE;
 	m_nWidth = 0;
+	m_nLineWidth = 0;
+	m_nLineStyle = 0;
 }
 
 Cdraw3View::~Cdraw3View()
@@ -117,7 +121,7 @@ void Cdraw3View::OnLButtonUp(UINT nFlags, CPoint point)
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 
 	CClientDC dc(this);
-	CPen pen(PS_SOLID, 2, RGB(23, 53, 166));
+	CPen pen(m_nLineStyle, m_nLineWidth, m_color);
 	CPen* pOldPen = dc.SelectObject(&pen);
 	switch (m_DrawType)
 	{
@@ -160,7 +164,7 @@ void Cdraw3View::OnMouseMove(UINT nFlags, CPoint point)
 	if (m_DrawType == DT_PEN)
 	{
 		CClientDC dc(this);
-		CPen pen(PS_DASH, 5, RGB(255, 231, 233));
+		CPen pen(m_nLineStyle, m_nLineWidth, m_color);
 		CPen* pOldPen = dc.SelectObject(&pen);
 		if (m_bDraw)
 		{
@@ -247,4 +251,19 @@ void Cdraw3View::OnRButtonUp(UINT nFlags, CPoint point)
 	ClientToScreen(&point);
 	mu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTALIGN, point.x, point.y, this);
 	CView::OnRButtonUp(nFlags, point);
+}
+
+void Cdraw3View::OnFileSetup()
+{
+	// TODO: 在此添加命令处理程序代码
+	Setup conf;
+	conf.m_nLineWidth = m_nLineWidth;
+	conf.m_nLineStyle = m_nLineStyle;
+	conf.m_color = m_color;
+	if (IDOK == conf.DoModal())
+	{
+		m_nLineWidth = conf.m_nLineWidth;
+		m_nLineStyle = conf.m_nLineStyle;
+		m_color = conf.m_color;
+	}
 }

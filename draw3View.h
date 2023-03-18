@@ -64,7 +64,12 @@ public:
 protected:
 	CMenu m_Menu;
 public:
-	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);	
+	afx_msg void OnFileSetup();
+protected:
+	UINT m_nLineWidth;
+	int m_nLineStyle;
+	COLORREF m_color;
 };
 
 #ifndef _DEBUG  // draw3View.cpp 中的调试版本
