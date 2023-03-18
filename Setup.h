@@ -27,4 +27,9 @@ public:
 	int m_nLineStyle;
 	afx_msg void OnBnClickedButton1();
 	COLORREF m_color;
+	afx_msg void OnBnClickedRadio1();
+	afx_msg void OnBnClickedRadio2();
+	afx_msg void OnBnClickedRadio3();
+	afx_msg void OnPaint();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 };
