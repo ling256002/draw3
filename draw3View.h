@@ -70,6 +70,7 @@ protected:
 	UINT m_nLineWidth;
 	int m_nLineStyle;
 	COLORREF m_color;
+	CMetaFileDC m_dcMetaFile;
 };
 
 #ifndef _DEBUG  // draw3View.cpp 中的调试版本

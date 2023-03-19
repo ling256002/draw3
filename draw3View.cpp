@@ -51,6 +51,8 @@ Cdraw3View::Cdraw3View() noexcept
 	m_nWidth = 0;
 	m_nLineWidth = 0;
 	m_nLineStyle = 0;
+	// 基于内存的元文件
+	m_dcMetaFile.Create();
 }
 
 Cdraw3View::~Cdraw3View()
@@ -69,7 +71,7 @@ BOOL Cdraw3View::PreCreateWindow(CREATESTRUCT& cs)
 
 // Cdraw3View 绘图
 
-void Cdraw3View::OnDraw(CDC* /*pDC*/)
+void Cdraw3View::OnDraw(CDC* pDC)
 {
 	Cdraw3Doc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -77,6 +79,18 @@ void Cdraw3View::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: 在此处为本机数据添加绘制代码
+	// 声明一个metafile的对象
+	HMETAFILE metafile;
+	// 结束录制，保存文件
+	metafile = m_dcMetaFile.Close();
+	// 重放元文件
+	pDC->PlayMetaFile(metafile);
+	// 准备新的录制
+	m_dcMetaFile.Create();
+	// 在新的录制中重放旧元文件
+	m_dcMetaFile.PlayMetaFile(metafile);
+	// 删除元文件
+	DeleteMetaFile(metafile);
 }
 
 
@@ -120,25 +134,25 @@ void Cdraw3View::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 
-	CClientDC dc(this);
+	//CClientDC dc(this);
 	CPen pen(m_nLineStyle, m_nLineWidth, m_color);
-	CPen* pOldPen = dc.SelectObject(&pen);
+	CPen* pOldPen = m_dcMetaFile.SelectObject(&pen);
 	switch (m_DrawType)
 	{
 	case DT_LINE:
 	{
-		dc.MoveTo(m_pOrigin);
-		dc.LineTo(point);
+		m_dcMetaFile.MoveTo(m_pOrigin);
+		m_dcMetaFile.LineTo(point);
 	}
 	break;
 	case DT_RECT:
 	{
-		dc.Rectangle(CRect(m_pOrigin, point));
+		m_dcMetaFile.Rectangle(CRect(m_pOrigin, point));
 	}
 	break;
 	case DT_ELLIPSE:
 	{
-		dc.Ellipse(CRect(m_pOrigin, point));
+		m_dcMetaFile.Ellipse(CRect(m_pOrigin, point));
 	}
 	break;
 	case DT_PEN:
@@ -149,9 +163,12 @@ void Cdraw3View::OnLButtonUp(UINT nFlags, CPoint point)
 	default:
 		break;
 	}
-	dc.SelectObject(pOldPen);
+	m_dcMetaFile.SelectObject(pOldPen);
 
 	m_bDraw = false;
+
+	// 无效界面
+	Invalidate();
 
 	CView::OnLButtonUp(nFlags, point);
 }
@@ -163,17 +180,19 @@ void Cdraw3View::OnMouseMove(UINT nFlags, CPoint point)
 
 	if (m_DrawType == DT_PEN)
 	{
-		CClientDC dc(this);
+		//CClientDC dc(this);
 		CPen pen(m_nLineStyle, m_nLineWidth, m_color);
-		CPen* pOldPen = dc.SelectObject(&pen);
+		CPen* pOldPen = m_dcMetaFile.SelectObject(&pen);
 		if (m_bDraw)
 		{
-			dc.MoveTo(m_pOrigin);
-			dc.LineTo(point);
+			m_dcMetaFile.MoveTo(m_pOrigin);
+			m_dcMetaFile.LineTo(point);
 			m_pOrigin = point;
 		}
-		//dc.SelectObject(pOldPen);
+		m_dcMetaFile.SelectObject(pOldPen);
+		//Invalidate();
 	}
+
 
 	CView::OnMouseMove(nFlags, point);
 }
