@@ -9,6 +9,14 @@
 
 #include "resource.h"       // 主符号
 
+enum DRAW_TYPE
+{
+	DT_LINE,
+	DT_RECT,
+	DT_ELLIPSE,
+	DT_PEN
+};
+
 
 // Cdraw3App:
 // 有关此类的实现，请参阅 draw3.cpp

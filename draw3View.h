@@ -3,14 +3,7 @@
 //
 
 #pragma once
-
-enum DRAW_TYPE
-{
-	DT_LINE,
-	DT_RECT,
-	DT_ELLIPSE,
-	DT_PEN
-};
+#include "Graph.h"
 
 
 class Cdraw3View : public CView
@@ -64,12 +57,19 @@ public:
 protected:
 	CMenu m_Menu;
 public:
+	//存储所有的绘制信息
+	CArray<Graph*> m_pGraphs;
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);	
 	afx_msg void OnFileSetup();
 protected:
 	UINT m_nLineWidth;
 	int m_nLineStyle;
 	COLORREF m_color;
+	CDC m_dcCompatible;
+	Graph* m_tmpGraph;
+public:
+	afx_msg void OnFileWrite();
+	afx_msg void OnFileRead();
 };
 
 #ifndef _DEBUG  // draw3View.cpp 中的调试版本

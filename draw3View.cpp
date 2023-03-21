@@ -10,6 +10,7 @@
 #include "draw3.h"
 #endif
 
+#pragma once
 #include "draw3Doc.h"
 #include "draw3View.h"
 
@@ -37,6 +38,8 @@ BEGIN_MESSAGE_MAP(Cdraw3View, CView)
 	ON_UPDATE_COMMAND_UI(ID_DRAW_RECT, &Cdraw3View::OnUpdateDrawRect)
 	ON_WM_RBUTTONUP()
 	ON_COMMAND(ID_FILE_SETUP, &Cdraw3View::OnFileSetup)
+	ON_COMMAND(ID_FILE_WRITE, &Cdraw3View::OnFileWrite)
+	ON_COMMAND(ID_FILE_READ, &Cdraw3View::OnFileRead)
 END_MESSAGE_MAP()
 
 // Cdraw3View 构造/析构
@@ -55,6 +58,13 @@ Cdraw3View::Cdraw3View() noexcept
 
 Cdraw3View::~Cdraw3View()
 {
+	//释放m_pGraphs中的数据
+	int cnt = m_pGraphs.GetSize();
+	while (cnt--)
+	{
+		delete m_pGraphs.GetAt(cnt);
+	}
+	m_pGraphs.RemoveAll();
 }
 
 BOOL Cdraw3View::PreCreateWindow(CREATESTRUCT& cs)
@@ -69,7 +79,7 @@ BOOL Cdraw3View::PreCreateWindow(CREATESTRUCT& cs)
 
 // Cdraw3View 绘图
 
-void Cdraw3View::OnDraw(CDC* /*pDC*/)
+void Cdraw3View::OnDraw(CDC* pDC)
 {
 	Cdraw3Doc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -77,6 +87,19 @@ void Cdraw3View::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: 在此处为本机数据添加绘制代码
+	
+	////把兼容设备的数据拷贝到真实设备，完成显示工作
+	//CRect rect;
+	//GetClientRect(&rect);
+	//pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_dcCompatible, 0, 0, SRCCOPY);
+
+	//根据 m_pGraphs数组的绘制信息，完成重绘工作
+
+	int cnt = m_pGraphs.GetSize(); //获得数组长度
+	for (int i = 0; i < cnt; i++)
+	{
+		m_pGraphs.GetAt(i)->Draw(pDC);		
+	}
 }
 
 
@@ -110,7 +133,30 @@ void Cdraw3View::OnLButtonDown(UINT nFlags, CPoint point)
 
 	//保存起点到成员变量
 	m_pOrigin = point;
-	m_bDraw = true;
+	if (m_DrawType == DT_PEN)
+	{
+		m_bDraw = true;
+		m_tmpGraph = new Graph(m_DrawType, m_nLineStyle, m_nLineWidth, m_color);
+		m_tmpGraph->AddPoint(point);
+	}
+
+	//CClientDC dc(this);
+
+	////初始化兼容设备上下文
+	//if (!m_dcCompatible.m_hDC)
+	//{
+	//	// 创建兼容DC
+	//	m_dcCompatible.CreateCompatibleDC(&dc);
+	//	CRect rect;
+	//	//获得客户区大小
+	//	GetClientRect(&rect);
+	//	CBitmap bitmap;
+	//	//创建兼容Bitmap
+	//	bitmap.CreateCompatibleBitmap(&dc, rect.Width(), rect.Height());
+	//	m_dcCompatible.SelectObject(&bitmap);
+	//	m_dcCompatible.FillSolidRect(rect, RGB(0, 255, 0));
+	//}
+	
 
 	CView::OnLButtonDown(nFlags, point);
 }
@@ -123,35 +169,55 @@ void Cdraw3View::OnLButtonUp(UINT nFlags, CPoint point)
 	CClientDC dc(this);
 	CPen pen(m_nLineStyle, m_nLineWidth, m_color);
 	CPen* pOldPen = dc.SelectObject(&pen);
+	//CPen* pOldPen = m_dcCompatible.SelectObject(&pen);
 	switch (m_DrawType)
 	{
 	case DT_LINE:
 	{
 		dc.MoveTo(m_pOrigin);
 		dc.LineTo(point);
+		/*m_dcCompatible.MoveTo(m_pOrigin);
+		m_dcCompatible.LineTo(point);*/
 	}
 	break;
 	case DT_RECT:
 	{
 		dc.Rectangle(CRect(m_pOrigin, point));
+		//m_dcCompatible.Rectangle(CRect(m_pOrigin, point));
 	}
 	break;
 	case DT_ELLIPSE:
 	{
 		dc.Ellipse(CRect(m_pOrigin, point));
+		//m_dcCompatible.Ellipse(CRect(m_pOrigin, point));
 	}
 	break;
 	case DT_PEN:
 	{
-
+		m_bDraw = false;
 	}
 	break;
 	default:
 		break;
 	}
 	dc.SelectObject(pOldPen);
+	//m_dcCompatible.SelectObject(pOldPen);
 
-	m_bDraw = false;
+	if (m_DrawType != DT_PEN)
+	{
+		//  释放内存
+		Graph* gh = new Graph(m_DrawType, m_nLineStyle, m_nLineWidth, m_color);
+		gh->AddPoint(m_pOrigin, point);
+		m_pGraphs.Add(gh);
+	}
+	else
+	{
+		//添加画笔的最后一个点
+		m_tmpGraph->AddPoint(point);
+		m_pGraphs.Add(m_tmpGraph);
+	}
+
+	//Invalidate();
 
 	CView::OnLButtonUp(nFlags, point);
 }
@@ -166,14 +232,27 @@ void Cdraw3View::OnMouseMove(UINT nFlags, CPoint point)
 		CClientDC dc(this);
 		CPen pen(m_nLineStyle, m_nLineWidth, m_color);
 		CPen* pOldPen = dc.SelectObject(&pen);
+		//CPen* pOldPen = m_dcCompatible.SelectObject(&pen);
 		if (m_bDraw)
 		{
 			dc.MoveTo(m_pOrigin);
 			dc.LineTo(point);
+			/*m_dcCompatible.MoveTo(m_pOrigin);
+			m_dcCompatible.LineTo(point);*/
+
+			/*Graph* gh = new Graph(m_DrawType, m_nLineStyle, m_nLineWidth, m_color);
+			gh->AddPoint(m_pOrigin, point);
+			m_pGraphs.Add(gh);*/
+			m_tmpGraph->AddPoint(point);
+
 			m_pOrigin = point;
+			//Invalidate();
 		}
-		//dc.SelectObject(pOldPen);
+		dc.SelectObject(pOldPen);
+		//m_dcCompatible.SelectObject(pOldPen);
 	}
+
+	
 
 	CView::OnMouseMove(nFlags, point);
 }
@@ -265,5 +344,52 @@ void Cdraw3View::OnFileSetup()
 		m_nLineWidth = conf.m_nLineWidth;
 		m_nLineStyle = conf.m_nLineStyle;
 		m_color = conf.m_color;
+	}
+}
+
+
+void Cdraw3View::OnFileWrite()
+{
+	// TODO: 在此添加命令处理程序代码
+	CString hello = _T("hello,world. 你好吗！\n");
+	// 文件对话框
+	CFileDialog fileDlg(FALSE);
+	// 如果点击确定
+	if (IDOK == fileDlg.DoModal())
+	{
+		// 获取对话框返回的文件名
+		CString path = fileDlg.GetPathName();
+		// 打开文件
+		CFile file(path, CFile::modeWrite | CFile::modeCreate);
+		// 写入
+		int len = hello.GetLength() * sizeof(TCHAR);
+		file.Write(hello, len);
+		// 关闭
+		file.Close();
+	}
+}
+
+
+void Cdraw3View::OnFileRead()
+{
+	// TODO: 在此添加命令处理程序代码
+	CFileDialog fileDlg(TRUE);
+	if (IDOK == fileDlg.DoModal())
+	{
+		CString path = fileDlg.GetPathName();
+		CFile file(path, CFile::modeRead);
+		// 准备缓冲区
+		TCHAR* pBuf;
+		int cnt = file.GetLength();
+		int chars = cnt / sizeof(TCHAR);
+		pBuf = new TCHAR[chars + 1];
+		// 读取文件内容到缓冲区
+		file.Read(pBuf, cnt);
+		// 设置字符串结束位置
+		pBuf[chars] = 0;
+
+		MessageBox(pBuf);
+		file.Close();
+		delete[]pBuf;
 	}
 }
